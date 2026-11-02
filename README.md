@@ -46,7 +46,7 @@ Plugin market: **设置 → 插件 → 插件市场 → 主题（Themes）**, th
 From a repository:
 
 ```sh
-dsh plugin --profile desktop add github:<owner>/dsh-theme-matrix-glass
+dsh plugin --profile desktop add github:undefineken/dsh-theme-matrix-glass
 ```
 
 From npm, once published:

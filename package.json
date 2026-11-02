@@ -4,6 +4,19 @@
   "license": "MIT",
   "type": "module",
   "description": "DeepSeek Harness theme: Matrix-style binary (0/1) digital rain that spawns only while a task is running, plus a frosted-glass token layer; digit and panel opacity are adjustable.",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/undefineken/dsh-theme-matrix-glass.git"
+  },
+  "keywords": [
+    "dsh",
+    "dsh-plugin",
+    "deepseek-harness",
+    "theme",
+    "matrix",
+    "digital-rain",
+    "frosted-glass"
+  ],
   "exports": {
     ".": "./index.js",
     "./client": "./client.js",
