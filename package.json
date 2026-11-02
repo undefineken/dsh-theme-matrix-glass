@@ -1,6 +1,6 @@
 {
   "name": "dsh-theme-matrix-glass",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "license": "MIT",
   "type": "module",
   "description": "DeepSeek Harness theme: Matrix-style binary (0/1) digital rain that spawns only while a task is running, plus a frosted-glass token layer; digit and panel opacity are adjustable.",

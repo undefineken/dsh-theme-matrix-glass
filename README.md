@@ -11,13 +11,14 @@ DeepSeek Harness（dsh）主题插件：黑客帝国式 **二进制数字雨**�
 | Binary rain gated by activity | Columns of `0`/`1` spawn only while a session reports `running: true`. Source: the session snapshot each surface receives (`byId[sessionId].running`, `current` session preferred). |
 | Falls out, then blank | Stopping the gate stops spawning; live columns keep falling until `y - tail·lineHeight` passes the bottom edge, then the canvas is cleared (`clearRect`) and the `requestAnimationFrame` loop is cancelled. An idle screen costs nothing. |
 | Low digit opacity | Default `0.10`, adjustable `0.02–0.28`. Only the head glyph of a column is brighter (global alpha capped at 1.0); tail glyphs fade as `pow(1 - i/tail, 1.7)`. |
+| Same look in light and dark | Light and dark need different ink, not just a different blend mode: `multiply` keeps only what is darker than the backdrop, so the bright green that glows on black is close to the paper on a near-white page. Light mode therefore draws a deeper green (`hsl(140, 74–88%, 26–46%)`) and applies a `1.7×` alpha gain, so one opacity setting reads the same in both appearances. The active scheme is read from `body[data-ds-dark-theme]` and followed live through a `MutationObserver`, so switching appearance repaints immediately. |
 | Frosted glass via theme tokens | A layer written through `theme.overrideTokens()` on the alias surface tokens (`bg-layer-1`, `bg-layer-2`, `bg-overlay`, `specific-sidebar-fill`), the border tokens, brand and label tokens. Translucent surfaces + green hairline borders. The documented `--dsw-menu-backdrop-filter` token is also set so menus blur; if a dsh line has no such token the call is skipped and the rest still applies. |
 | Registered theme id | `theme.register({ id: 'matrix-glass', colorScheme: 'dark', … })`. The plugin never calls `setTheme()`: the layer sits on top of whatever light / dark / system appearance is already active. |
 | Live configuration surface | A configuration card on this bundle's Plugin Manager page (`plugins.bundle.config` seat). Values persist in `localStorage` under `dsh-theme-matrix-glass:v1`. |
 
 ## Where it renders / 渲染位置
 
-- Rain canvas: `shell.overlay` — the frame-wide, click-through layer (`inset: 0`). The canvas uses `position: fixed; inset: 0; z-index: -1; pointer-events: none`, with `mix-blend-mode: screen` in dark mode and `multiply` in light mode, so low-alpha digits do not dim body text.
+- Rain canvas: `shell.overlay` — the frame-wide, click-through layer (`inset: 0`). The canvas uses `position: fixed; inset: 0; z-index: -1; pointer-events: none`, with `mix-blend-mode: screen` in dark mode and `multiply` in light mode, so low-alpha digits do not dim body text. The digit ink and alpha gain differ per scheme (see the table above), because the same bright green is unreadable on white.
 - Settings card: `plugins.bundle.config`, keyed by the package name; renders `null` for the `summary` view.
 
 ## Settings / 可调项
@@ -84,6 +85,7 @@ From a local checkout: point the Plugin Manager installer at the folder holding 
 
 - Client 半区硬注入只有 `slots` 与 `locale`；`theme`、`sessions` 一律 `ctx.get()` 可选读取——注入表里写了运行时不提供的服务，`apply` 会整条不执行。
 - 数字不透明度与面板不透明度是两个独立旋钮：前者影响阅读（默认 0.10），后者影响玻璃质感（默认 0.68，低于 0.45 正文对比度开始变差）。
+- **浅色 / 深色必须用不同的墨水**，不能只换 `mix-blend-mode`：`multiply` 只保留比底色更暗的像素，深色下发光的那支亮绿在近白底上几乎等于纸色。浅色走深绿 + `1.7×` alpha 增益，同一档不透明度在两种外观下观感一致；当前配色由 `body[data-ds-dark-theme]` 读取，并用 `MutationObserver` 实时跟随切换。
 - token 层用 `overrideTokens(source, …)` 叠加而不是改写主题本体：`source` 固定为包名，重复调用即替换同一层；卸载时 disposer 生效。
 - 想改图标：`python tools/make-market-icon.py`（市场条目只接受 GitHub 托管的 **位图**，SVG 会被拒）。
 

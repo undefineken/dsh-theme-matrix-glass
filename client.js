@@ -241,6 +241,45 @@ body[data-ds-dark-theme] .mg-layer { mix-blend-mode: screen; }
       const reducedMotion = typeof window.matchMedia === 'function' ? window.matchMedia('(prefers-reduced-motion: reduce)') : null;
       const MIN_FRAME_MS = 1000 / 30;
 
+      /**
+       * Light and dark need different ink, not merely a different blend mode.
+       * `multiply` keeps only what is DARKER than the backdrop, so the bright
+       * green that glows on black is close to the paper on a near-white page:
+       * same alpha, a fraction of the visible contrast. Light mode therefore
+       * draws a deeper green and applies a small gain, so one opacity setting
+       * reads the same in both appearances.
+       */
+      const LIGHT_GAIN = 1.7;
+      let darkScheme = null;
+      const schemeListeners = new Set();
+      function readDark() {
+        return !!(document.body && document.body.hasAttribute('data-ds-dark-theme'));
+      }
+      function isDark() {
+        if (darkScheme === null) darkScheme = readDark();
+        return darkScheme;
+      }
+      const onSchemeChange = () => {
+        const next = readDark();
+        if (next === darkScheme) return;
+        darkScheme = next;
+        for (const fn of schemeListeners) {
+          try {
+            fn();
+          } catch {
+            /* a listener of another surface must not break the engine */
+          }
+        }
+        clear();
+        if (raining()) start();
+      };
+      const schemeObserver = typeof MutationObserver === 'function'
+        ? new MutationObserver(onSchemeChange)
+        : null;
+      if (schemeObserver && document.body) {
+        schemeObserver.observe(document.body, { attributes: true, attributeFilter: ['data-ds-dark-theme', 'style'] });
+      }
+
       function notifyBusy() {
         for (const fn of busyListeners) {
           try {
@@ -362,6 +401,7 @@ body[data-ds-dark-theme] .mg-layer { mix-blend-mode: screen; }
         paint.font = cfg.fontSize + 'px ui-monospace, SFMono-Regular, Menlo, Consolas, monospace';
 
         const hue = 140;
+        const dark = isDark();
         const glyphTick = Math.floor(now / 220);
         for (const col of columns) {
           col.y += (col.v * step) / 1000;
@@ -369,15 +409,26 @@ body[data-ds-dark-theme] .mg-layer { mix-blend-mode: screen; }
             const y = col.y - i * col.line;
             if (y > height + col.line || y < -col.line) continue;
             const fade = i === 0 ? 1 : Math.pow(1 - i / col.tail, 1.7);
-            const alpha = cfg.opacity * fade;
-            if (alpha <= 0.004) continue;
             const head = i === 0;
+            let alpha = cfg.opacity * fade;
+            let ink;
+            if (dark) {
+              ink = head
+                ? 'hsl(' + hue + ', 40%, 92%)'
+                : 'hsl(' + hue + ', 92%, ' + (44 + fade * 16) + '%)';
+            } else {
+              alpha = Math.min(1, alpha * LIGHT_GAIN);
+              ink = head
+                ? 'hsl(' + hue + ', 88%, 26%)'
+                : 'hsl(' + hue + ', 74%, ' + (34 + fade * 12) + '%)';
+            }
+            if (alpha <= 0.004) continue;
             paint.globalAlpha = head ? Math.min(1, alpha * 2) : alpha;
-            paint.fillStyle = head
-              ? 'hsl(' + hue + ', 40%, 92%)'
-              : 'hsl(' + hue + ', 92%, ' + (44 + fade * 16) + '%)';
+            paint.fillStyle = ink;
             if (head && cfg.glow) {
-              paint.shadowColor = 'hsla(' + hue + ', 95%, 62%, 0.7)';
+              paint.shadowColor = dark
+                ? 'hsla(' + hue + ', 95%, 62%, 0.7)'
+                : 'hsla(' + hue + ', 82%, 34%, 0.55)';
               paint.shadowBlur = cfg.fontSize * 0.65;
             } else {
               paint.shadowBlur = 0;
@@ -480,6 +531,8 @@ body[data-ds-dark-theme] .mg-layer { mix-blend-mode: screen; }
           if (reducedMotion && typeof reducedMotion.removeEventListener === 'function') {
             reducedMotion.removeEventListener('change', onResize);
           }
+          if (schemeObserver) schemeObserver.disconnect();
+          schemeListeners.clear();
           busyListeners.clear();
           columns = [];
           paint = undefined;
@@ -509,19 +562,19 @@ body[data-ds-dark-theme] .mg-layer { mix-blend-mode: screen; }
       const deep = cfg.deepDark;
       return {
         '--dsw-alias-bg-base': {
-          light: 'hsl(150, 18%, 96%)',
+          light: 'hsl(150, 22%, 95%)',
           dark: deep ? hsl(HUE, 45, 3) : 'hsl(220, 14%, 8%)',
         },
         '--dsw-alias-bg-layer-1': {
-          light: hsla(150, 24, 94, a),
+          light: hsla(150, 30, 90, a),
           dark: hsla(HUE, 30, 12, a),
         },
         '--dsw-alias-bg-layer-2': {
-          light: hsla(150, 26, 98, Math.min(0.95, a + 0.06)),
+          light: hsla(150, 28, 95, Math.min(0.95, a + 0.06)),
           dark: hsla(HUE, 28, 16, Math.min(0.95, a + 0.06)),
         },
         '--dsw-alias-bg-overlay': {
-          light: hsla(150, 22, 99, Math.min(0.96, a + 0.18)),
+          light: hsla(150, 26, 97, Math.min(0.96, a + 0.18)),
           dark: hsla(HUE, 26, 10, Math.min(0.96, a + 0.18)),
         },
         '--dsw-alias-border-l1': {
@@ -553,7 +606,7 @@ body[data-ds-dark-theme] .mg-layer { mix-blend-mode: screen; }
           dark: 'hsl(' + HUE + ', 80%, 62%)',
         },
         '--dsw-specific-sidebar-fill': {
-          light: hsla(150, 20, 92, Math.max(0.55, a - 0.04)),
+          light: hsla(150, 24, 88, Math.max(0.55, a - 0.04)),
           dark: hsla(HUE, 40, deep ? 5 : 8, Math.max(0.55, a - 0.04)),
         },
       };
