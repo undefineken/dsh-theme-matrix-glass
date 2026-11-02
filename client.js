@@ -54,6 +54,7 @@ window.__ModuleLoader__.load({
         rainNote: '开关数字雨本身；关闭后画面立即归空。',
         opacity: '数字不透明度',
         opacityNote: '默认 0.10。保持低透明度，不影响正常 UI 阅读。',
+        opacityNoteLight: '同一档不透明度在浅色下会显得更实（深绿墨水 + 1.7 倍增益）；觉得太重就往低调。',
         speed: '下落速度',
         density: '数字列密度',
         fontSize: '字形大小',
@@ -79,6 +80,7 @@ window.__ModuleLoader__.load({
         rainNote: 'Turns the rain itself off; the screen clears at once.',
         opacity: 'Digit opacity',
         opacityNote: 'Default 0.10. Keep it low so the UI stays readable.',
+        opacityNoteLight: 'The same value looks denser on a light page (deeper ink, 1.7x gain); lower it if it feels heavy.',
         speed: 'Fall speed',
         density: 'Column density',
         fontSize: 'Glyph size',
@@ -251,6 +253,7 @@ body[data-ds-dark-theme] .mg-layer { mix-blend-mode: screen; }
        */
       const LIGHT_GAIN = 1.7;
       let darkScheme = null;
+      const schemeListeners = new Set();
       function readDark() {
         return !!(document.body && document.body.hasAttribute('data-ds-dark-theme'));
       }
@@ -258,11 +261,19 @@ body[data-ds-dark-theme] .mg-layer { mix-blend-mode: screen; }
         if (darkScheme === null) darkScheme = readDark();
         return darkScheme;
       }
-      // Switching appearance mid-run must repaint, not wait for a reload.
+      // Switching appearance mid-run must repaint, not wait for a reload, and
+      // the settings card must re-read which note it shows.
       const onSchemeChange = () => {
         const next = readDark();
         if (next === darkScheme) return;
         darkScheme = next;
+        for (const fn of schemeListeners) {
+          try {
+            fn();
+          } catch {
+            /* a listener of another surface must not break the engine */
+          }
+        }
         clear();
         if (raining()) start();
       };
@@ -517,6 +528,12 @@ body[data-ds-dark-theme] .mg-layer { mix-blend-mode: screen; }
           busyListeners.add(fn);
           return () => busyListeners.delete(fn);
         },
+        isDark,
+        darkSnapshot: () => isDark(),
+        darkSubscribe(fn) {
+          schemeListeners.add(fn);
+          return () => schemeListeners.delete(fn);
+        },
         dispose() {
           stop();
           window.removeEventListener('resize', onResize);
@@ -525,6 +542,7 @@ body[data-ds-dark-theme] .mg-layer { mix-blend-mode: screen; }
             reducedMotion.removeEventListener('change', onResize);
           }
           if (schemeObserver) schemeObserver.disconnect();
+          schemeListeners.clear();
           busyListeners.clear();
           columns = [];
           paint = undefined;
@@ -703,6 +721,7 @@ body[data-ds-dark-theme] .mg-layer { mix-blend-mode: screen; }
       const t = props.t;
       const cfg = React.useSyncExternalStore(store.subscribe, store.get, store.get);
       const busy = React.useSyncExternalStore(engine.busySubscribe, engine.busySnapshot, engine.busySnapshot);
+      const dark = React.useSyncExternalStore(engine.darkSubscribe, engine.darkSnapshot, engine.darkSnapshot);
 
       const percent = (value) => Math.round(value * 100) + '%';
       const px = (value) => value + ' px';
@@ -731,7 +750,7 @@ body[data-ds-dark-theme] .mg-layer { mix-blend-mode: screen; }
         }),
         Row({
           label: t('opacity'),
-          note: t('opacityNote'),
+          note: t(dark ? 'opacityNote' : 'opacityNoteLight'),
           control: [
             h('span', { key: 'v', className: 'mg-value' }, percent(cfg.opacity)),
             h('input', {
