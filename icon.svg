@@ -1,0 +1,48 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128" role="img" aria-label="Matrix rain frosted glass theme">
+  <defs>
+    <linearGradient id="mg-bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#04120c"/>
+      <stop offset="1" stop-color="#01070a"/>
+    </linearGradient>
+    <linearGradient id="mg-stream" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#e6fff0"/>
+      <stop offset="0.22" stop-color="#25e07e"/>
+      <stop offset="1" stop-color="#0a5c33" stop-opacity="0"/>
+    </linearGradient>
+    <linearGradient id="mg-glass" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#123a28" stop-opacity="0.62"/>
+      <stop offset="1" stop-color="#071a12" stop-opacity="0.5"/>
+    </linearGradient>
+  </defs>
+
+  <rect x="2" y="2" width="124" height="124" rx="26" fill="url(#mg-bg)"/>
+
+  <g font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="15" fill="url(#mg-stream)">
+    <text x="21" y="20">1</text>
+    <text x="21" y="38">0</text>
+    <text x="21" y="56">1</text>
+    <text x="21" y="74">0</text>
+    <text x="21" y="92">1</text>
+    <text x="21" y="110">0</text>
+
+    <text x="45" y="6">0</text>
+    <text x="45" y="24">1</text>
+    <text x="45" y="42">1</text>
+    <text x="45" y="60">0</text>
+    <text x="45" y="78">1</text>
+
+    <text x="88" y="14">1</text>
+    <text x="88" y="32">0</text>
+    <text x="88" y="50">0</text>
+    <text x="88" y="68">1</text>
+    <text x="88" y="86">0</text>
+    <text x="88" y="104">1</text>
+
+    <text x="110" y="34">0</text>
+    <text x="110" y="52">1</text>
+    <text x="110" y="70">0</text>
+  </g>
+
+  <rect x="30" y="46" width="66" height="50" rx="13" fill="url(#mg-glass)" stroke="#25e07e" stroke-opacity="0.34" stroke-width="1"/>
+  <rect x="30" y="46" width="66" height="50" rx="13" fill="none" stroke="#e6fff0" stroke-opacity="0.12" stroke-width="0.6"/>
+</svg>

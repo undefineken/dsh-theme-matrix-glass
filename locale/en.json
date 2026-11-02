@@ -1,0 +1,6 @@
+{
+  "meta": {
+    "title": "Matrix Rain · Frosted Glass Theme",
+    "description": "Frosted-glass theme: binary 0/1 digits fall in columns while a task is running. When the task stops, spawning stops, the remaining digits fall off screen, and the canvas clears. Digit opacity and panel opacity are both adjustable, defaulted low so the UI stays readable."
+  }
+}

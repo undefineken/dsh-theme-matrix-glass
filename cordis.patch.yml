@@ -1,0 +1,4 @@
+# dsh bundle patch: inserts the Matrix rain + frosted-glass theme plugin into the profile layer.
+- insert:
+    - id: matrix-glass
+      name: 'dsh-theme-matrix-glass'

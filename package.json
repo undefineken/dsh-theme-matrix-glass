@@ -1,0 +1,36 @@
+{
+  "name": "dsh-theme-matrix-glass",
+  "version": "1.0.0",
+  "license": "MIT",
+  "type": "module",
+  "description": "DeepSeek Harness theme: Matrix-style binary (0/1) digital rain that spawns only while a task is running, plus a frosted-glass token layer; digit and panel opacity are adjustable.",
+  "exports": {
+    ".": "./index.js",
+    "./client": "./client.js",
+    "./locale/*.json": "./locale/*.json",
+    "./icon": "./icon.svg"
+  },
+  "files": [
+    "index.js",
+    "client.js",
+    "cordis.patch.yml",
+    "locale/*.json",
+    "icon.svg",
+    "assets/*.png",
+    "LICENSE",
+    "README.md"
+  ],
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    },
+    "client": {
+      "platform": "web",
+      "immediately": true,
+      "inject": [
+        "@deepseek-ai/dsh-client-locale",
+        "@deepseek-ai/dsh-client-ui-theme"
+      ]
+    }
+  }
+}
