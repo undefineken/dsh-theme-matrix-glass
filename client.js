@@ -251,7 +251,6 @@ body[data-ds-dark-theme] .mg-layer { mix-blend-mode: screen; }
        */
       const LIGHT_GAIN = 1.7;
       let darkScheme = null;
-      const schemeListeners = new Set();
       function readDark() {
         return !!(document.body && document.body.hasAttribute('data-ds-dark-theme'));
       }
@@ -259,17 +258,11 @@ body[data-ds-dark-theme] .mg-layer { mix-blend-mode: screen; }
         if (darkScheme === null) darkScheme = readDark();
         return darkScheme;
       }
+      // Switching appearance mid-run must repaint, not wait for a reload.
       const onSchemeChange = () => {
         const next = readDark();
         if (next === darkScheme) return;
         darkScheme = next;
-        for (const fn of schemeListeners) {
-          try {
-            fn();
-          } catch {
-            /* a listener of another surface must not break the engine */
-          }
-        }
         clear();
         if (raining()) start();
       };
@@ -532,7 +525,6 @@ body[data-ds-dark-theme] .mg-layer { mix-blend-mode: screen; }
             reducedMotion.removeEventListener('change', onResize);
           }
           if (schemeObserver) schemeObserver.disconnect();
-          schemeListeners.clear();
           busyListeners.clear();
           columns = [];
           paint = undefined;
